@@ -162,6 +162,9 @@ if args.vocab:
     def get_text(text, hps):
         text_norm = []
         for c in text:
+            if c not in symbols:
+                print(f"error: symbol '{c}' not found in vocab")
+                sys.exit(1)
             text_norm.append(symbols.index(c))
         if hps.data.add_blank:
             text_norm = intersperse(text_norm, 0)
