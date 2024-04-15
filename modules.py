@@ -99,10 +99,11 @@ class DDSConv(nn.Module):
     for i in range(self.n_layers):
       y = self.convs_sep[i](x * x_mask)
       y = self.norms_1[i](y)
-      y = F.gelu(y)
+      # workaround: wrong results of GELU on MPS: https://github.com/pytorch/pytorch/issues/98212#issuecomment-1913303542
+      y = F.gelu(y.contiguous())
       y = self.convs_1x1[i](y)
       y = self.norms_2[i](y)
-      y = F.gelu(y)
+      y = F.gelu(y.contiguous())
       y = self.drop(y)
       x = x + y
     return x * x_mask
