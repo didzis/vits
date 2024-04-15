@@ -56,3 +56,34 @@ python train_ms.py -c configs/vctk_base.json -m vctk_base
 
 ## Inference Example
 See [inference.ipynb](inference.ipynb)
+
+
+## Setup for Meta MMS TTS inference
+
+Optional: setup Python virtual environment first
+```
+python3 -m venv env
+. env/bin/activate
+```
+
+
+Install required Python packages
+
+```
+pip3 install -r mms-tts-inference-requirements.txt
+```
+
+Build `monotonic_align` module
+```
+cd monotonic_align && mkdir -p monotonic_align && python3 setup.py build_ext --inplace
+```
+
+Download some MMS TTS models
+```
+./download-mms-tts.sh eng models
+```
+
+Run inference
+```
+./inference.py -b models/eng -t 'vits is truly awesome' -o output.wav
+```
