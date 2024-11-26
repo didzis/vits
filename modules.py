@@ -17,6 +17,11 @@ from transforms import piecewise_rational_quadratic_transform
 LRELU_SLOPE = 0.1
 
 
+v = lambda version: tuple(map(int, version.split('.')))
+gelu_mps_fixed = v(torch.__version__) >= v('2.4.0')
+mps_available = torch.backends.mps.is_available()
+
+
 class LayerNorm(nn.Module):
   def __init__(self, channels, eps=1e-5):
     super().__init__()
@@ -100,10 +105,11 @@ class DDSConv(nn.Module):
       y = self.convs_sep[i](x * x_mask)
       y = self.norms_1[i](y)
       # workaround: wrong results of GELU on MPS: https://github.com/pytorch/pytorch/issues/98212#issuecomment-1913303542
-      y = F.gelu(y.contiguous())
+      gelu_use_workaround = mps_available and not gelu_mps_fixed and y.device.type == 'mps'
+      y = F.gelu(y.contiguous() if gelu_use_workaround else y)  # GELU MPS bug workaround for PyTorch versions below 2.4.0
       y = self.convs_1x1[i](y)
       y = self.norms_2[i](y)
-      y = F.gelu(y.contiguous())
+      y = F.gelu(y.contiguous() if gelu_use_workaround else y)  # GELU MPS bug workaround for PyTorch versions below 2.4.0
       y = self.drop(y)
       x = x + y
     return x * x_mask
