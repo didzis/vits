@@ -13,6 +13,8 @@ import commons
 from commons import init_weights, get_padding
 from transforms import piecewise_rational_quadratic_transform
 
+from chunked_conv1d import Conv1d, ConvTranspose1d
+
 
 LRELU_SLOPE = 0.1
 
